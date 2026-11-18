@@ -1,1 +1,7 @@
-project_id = "fqnmnkskyohaouakcjpm"
+
+[functions.report-create]
+verify_jwt = false
+
+[functions.comment-create]
+verify_jwt = false
+
