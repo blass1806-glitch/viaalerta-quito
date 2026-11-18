@@ -7,7 +7,7 @@ Deno.serve(async (req) => {
   if (!requirePublicKey(req)) return json(req, 401, { error: 'Cliente no autorizado.' });
 
   const origin = req.headers.get('origin') ?? '';
-  const allowed = (Deno.env.get('ALLOWED_ORIGINS') ?? '').split(',').map(x=>x.trim()).filter(Boolean);
+  const allowed = (Deno.env.get('ALLOWED_ORIGINS') ?? '').split(',').map(x => x.trim()).filter(Boolean);
   if (!allowed.includes(origin)) return json(req, 403, { error: 'Origen no autorizado.' });
 
   try {
@@ -20,14 +20,32 @@ Deno.serve(async (req) => {
     const token = String(form.get('turnstileToken') ?? '');
     const file = form.get('photo');
 
-    if (!['pothole','manhole','blocked','flood'].includes(category))
+    if (!['pothole', 'manhole', 'blocked', 'flood'].includes(category))
       return json(req, 400, { error: 'Categoría inválida.' });
 
     if (description.length > 500 || hasProfanity(description))
       return json(req, 400, { error: 'La descripción excede el límite o contiene lenguaje no permitido.' });
 
-    if (!validCoords(lat,lng))
+    if (!validCoords(lat, lng))
       return json(req, 400, { error: 'La ubicación está fuera del área admitida de Quito.' });
+
+    // Validación territorial contra el polígono oficial del DMQ.
+    const { data: insideQuito, error: geoError } = await db.rpc(
+      'is_point_in_quito',
+      {
+        p_lat: lat,
+        p_lng: lng
+      }
+    );
+
+    // Si falla PostGIS, no permitimos publicar el reporte.
+    if (geoError) {
+      console.error('Error en validación territorial:', geoError.message);
+      return json(req, 503, { error: 'No se pudo validar la ubicación. Inténtalo más tarde.' });
+    }
+
+    if (insideQuito !== true)
+      return json(req, 400, { error: 'La ubicación está fuera del Distrito Metropolitano de Quito.' });
 
     if (!(file instanceof File) || file.size < 1 || file.size > 5 * 1024 * 1024)
       return json(req, 400, { error: 'La fotografía debe pesar como máximo 5 MB.' });
