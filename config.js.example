@@ -1,0 +1,8 @@
+// Copia este archivo como config.js. Solo contiene claves públicas.
+// NUNCA coloques SUPABASE_SERVICE_ROLE_KEY ni TURNSTILE_SECRET_KEY aquí.
+window.VIAALERTA_CONFIG = {
+  supabaseUrl: 'https://TU-PROYECTO.supabase.co',
+  supabaseAnonKey: 'TU_SUPABASE_PUBLISHABLE_O_ANON_KEY',
+  turnstileSiteKey: 'TU_TURNSTILE_SITE_KEY',
+  functionsBaseUrl: 'https://TU-PROYECTO.supabase.co/functions/v1'
+};
