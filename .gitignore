@@ -1,0 +1,12 @@
+# Configuración local y secretos
+config.js
+.env
+.env.*
+!.env.example
+
+# Dependencias
+node_modules/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
